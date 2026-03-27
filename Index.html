@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Toman Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1 class="title">🔥 TOMAN WEB</h1>
+
+<!-- LOGIN -->
+<button onclick="login()">Sign in with Google</button>
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<!-- GANG -->
+<h2>👥 Gang System</h2>
+<button onclick="createGang()">Create Gang</button><br><br>
+
+<input id="code" placeholder="Enter Invite Code">
+<button onclick="joinGang()">Join Gang</button>
+
+<hr>
+
+<!-- CHAT -->
+<h2>💬 Live Chat</h2>
+<input id="msg" placeholder="Type message">
+<button onclick="sendMessage()">Send</button>
+
+<div id="chat"></div>
+
+<hr>
+
+<!-- BATTLE -->
+<h2>⚔️ Battle System</h2>
+<button onclick="fight()">Fight Now</button>
+<p id="result"></p>
+
+<hr>
+
+<!-- FEED -->
+<h2>📸 Feed</h2>
+<input id="img" placeholder="Image URL">
+<button onclick="post()">Post</button>
+
+<div id="feed"></div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+<!-- Main JS -->
+<script src="app.js"></script>
+
+</body>
+  </html>
