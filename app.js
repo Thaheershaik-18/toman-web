@@ -1,12 +1,9 @@
-// 🔥 ADD YOUR FIREBASE CONFIG HERE
+// 🔥 FIREBASE CONFIG (APNA DALNA HAI)
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
   databaseURL: "YOUR_DATABASE_URL",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_ID",
-  appId: "YOUR_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -20,7 +17,7 @@ const rtdb = firebase.database();
 function login() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
-        .then(() => alert("Logged in 🔥"))
+        .then(() => alert("Login Success 🔥"))
         .catch(err => alert(err.message));
 }
 
@@ -32,25 +29,24 @@ function logout() {
 // ---------------- GANG SYSTEM ----------------
 
 function createGang() {
-    const user = auth.currentUser;
-
-    if (!user) return alert("Login first!");
+    if (!auth.currentUser) return alert("Login first!");
 
     db.collection("gangs").add({
         name: "Toman",
-        captain: user.uid,
+        captain: auth.currentUser.uid,
         invite: "TOM" + Math.floor(Math.random()*999),
-        members: [user.uid]
+        members: [auth.currentUser.uid]
     });
 
     alert("Gang Created 🔥");
 }
 
 function joinGang() {
-    const code = document.getElementById("code").value;
+    let code = document.getElementById("code").value;
 
     db.collection("gangs").where("invite", "==", code)
     .get().then(snap => {
+
         if (snap.empty) return alert("Invalid Code ❌");
 
         let doc = snap.docs[0];
@@ -67,8 +63,9 @@ function joinGang() {
 // ---------------- CHAT ----------------
 
 function sendMessage() {
-    const text = document.getElementById("msg").value;
+    let text = document.getElementById("msg").value;
 
+    if (!text) return;
     if (!auth.currentUser) return alert("Login first!");
 
     rtdb.ref("chat").push({
@@ -79,45 +76,55 @@ function sendMessage() {
     document.getElementById("msg").value = "";
 }
 
+// 💬 CHAT BUBBLES
 rtdb.ref("chat").on("value", snap => {
     let html = "";
+    let current = auth.currentUser;
+
     snap.forEach(d => {
-        html += `<p>${d.val().user}: ${d.val().text}</p>`;
+        let data = d.val();
+        let isMe = current && data.user === current.displayName;
+
+        html += `
+            <div class="msg ${isMe ? 'me' : 'other'}">
+                ${data.text}
+            </div>
+        `;
     });
 
     document.getElementById("chat").innerHTML = html;
 });
 
-// ---------------- BATTLE ----------------
+// ---------------- ⚔️ BATTLE SYSTEM (HP BAR) ----------------
+
+let myHP = 100;
+let enemyHP = 100;
 
 function fight() {
-    let my = Math.floor(Math.random()*100);
-    let enemy = Math.floor(Math.random()*100);
+    let myAttack = Math.floor(Math.random()*20);
+    let enemyAttack = Math.floor(Math.random()*20);
 
-    let result = my > enemy ? "🔥 YOU WIN" : "💀 YOU LOSE";
+    enemyHP -= myAttack;
+    myHP -= enemyAttack;
 
-    document.getElementById("result").innerText =
-        `${result} (${my} vs ${enemy})`;
+    if (enemyHP < 0) enemyHP = 0;
+    if (myHP < 0) myHP = 0;
 
-    updateXP(result);
-}
+    document.getElementById("result").innerHTML = `
+        🧑 You: ${myHP} ❤️
+        <div class="hp-bar" style="width:${myHP}%"></div>
+        
+        👿 Enemy: ${enemyHP} 💀
+        <div class="hp-bar" style="width:${enemyHP}%"></div>
+    `;
 
-// ---------------- XP SYSTEM ----------------
+    if (myHP <= 0 || enemyHP <= 0) {
+        let win = myHP > enemyHP;
+        alert(win ? "🔥 YOU WIN" : "💀 YOU LOSE");
 
-function updateXP(result) {
-    if (!auth.currentUser) return;
-
-    let ref = db.collection("users").doc(auth.currentUser.uid);
-
-    db.runTransaction(async (t) => {
-        let doc = await t.get(ref);
-
-        let points = doc.exists ? doc.data().points || 0 : 0;
-
-        let newPoints = result.includes("WIN") ? points + 100 : points - 50;
-
-        t.set(ref, { points: newPoints }, { merge: true });
-    });
+        myHP = 100;
+        enemyHP = 100;
+    }
 }
 
 // ---------------- FEED ----------------
@@ -126,6 +133,7 @@ function post() {
     let url = document.getElementById("img").value;
 
     if (!url) return alert("Enter image URL");
+    if (!auth.currentUser) return alert("Login first!");
 
     db.collection("posts").add({
         user: auth.currentUser.uid,
